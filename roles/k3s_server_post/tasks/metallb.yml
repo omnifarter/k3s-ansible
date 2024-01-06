@@ -89,6 +89,21 @@
     - IPAddressPool
     - L2Advertisement
 
+- name: enable promiscuous mode for layer 2 configuration
+  command: >-
+    ifconfig {{ flannel_iface }} promisc
+  become: true
+  run_once: true
+  when: metal_lb_mode == "layer2"
+
+- name: Add script to enable promiscuous mode on reboot.
+  ansible.builtin.cron:
+    name: "enable promiscuous mode on reboot"
+    special_time: reboot
+    job: "sudo ifconfig {{ flannel_iface }} promisc"
+  run_once: true
+  when: metal_lb_mode == "layer2"
+
 - name: Test metallb-system resources for BGP configuration
   command: >-
     k3s kubectl -n metallb-system get {{ item }}
